@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <!-- google font -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100;300;400;500;700;900&family=Pattaya&display=swap"
+    rel="stylesheet" />
+  <!-- animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <!-- bs5 css -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous" />
+  <!-- reset css -->
+  <link rel="stylesheet" href="./css/reset.css" />
+  <!-- my css -->
+  <link rel="stylesheet" href="./css/products.css" />
+</head>
+
+<body class="" >
+  <div id="app" data-v-app>
+  <header class="container pattaya relative border-bottom">
+    <div class="d-flex justify-content-between">
+      <div class="logo absolute t-3">
+        <h1 class="animate__animated animate__flipInX animate__slower  fs-1">
+          <a href="./login.html" class="link-warning">FIV5</a>
+          </h1>
+      </div>
+      <div class="d-flex flex-column justify-content-center absolute r-0 t-5">
+        <ul class="d-flex header-link">
+          <li class="fs-4"><a href="#" class="link-info">About me</a></li>
+          <li class="ms-4 fs-4"><a href="#" class="link-info">Product</a></li>
+          <li class="ms-4 fs-4"><a href="#" class="link-info">Login</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <main class="bg-img h100vh pt-20" >
+    <div class="container text-white">
+      <button type="button" class="btn btn-info text-white" id="getProductsListBtn" @click="getProducts">
+        取得產品列表
+      </button>
+      <!-- 點擊觸發openProductModal帶參數true來判斷為是新增 非編輯 -->
+      <button type="button" class="btn btn-info text-white ms-4" @click="openProductModal(true)">
+        建立新的產品
+      </button>
+      <!-- <p id="loginStatusText" class="text-warning mb-2 fs-4"><span class="pattaya">please click</span>'取得產品列表'</p> -->
+      <table class="table mt-4 text-white">
+        <thead>
+          <tr class="text-center fs-4 border-bottom border-light border-1">
+            <th width="120">分類</th>
+            <th>產品名稱</th>
+            <th width="200">產品圖片</th>
+            <th width="120">原價</th>
+            <th width="120">售價</th>
+            <th width="150">是否啟用</th>
+            <th width="120">刪除</th>
+          </tr>
+        </thead>
+        <tbody id="productsList">
+          <!-- 在tbody的tr裡面使用v-for跑迴圈 記得帶key 使用{{}}渲染畫面 -->
+           <tr class="text-center" v-for="item in productsAry" :key="item.id">
+            <td>{{item.category}}</td>
+            <td>{{item.title}}</td>
+            <td width="120">
+              <img
+                src=""
+                alt="">
+
+            </td>
+            <td width="120">
+              {{item.origin_price}}
+            </td>
+            <td width="120">
+              {{item.price}}
+            </td>
+            <td width="100">
+              <!-- 用v-if判斷顯示上架還是未上架 -->
+              <span v-if="item.is_enabled">上架</span>
+              <span v-else>未上架</span>
+            </td>
+            <td width="120">
+              <!-- 點擊觸發openProductModal帶參數false來判斷為是編輯 非新增 並且帶上item才能知道編輯哪個產品-->
+              <button type="button" class="btn btn-outline-primary btn-sm" data-action=""
+                data-id="" @click="openProductModal(false,item)">
+                編輯
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger move deleteBtn" data-action="remove"
+                data-id="" @click="openProductDeleteModal(item)"> 刪除 </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- 撈出data productsAry.length長度 -->
+      <p class="fs-4">此頁面有 <span id="productsCount" >{{productsAry.length}}</span> 項產品</p>
+      <!-- 建立props(外傳內data)橋樑 前內後外 建立$emit(內傳外fn)橋梁 前內後外-->
+    <pagination class="d-flex justify-content-center" :page="pagination" @go-to-products-page="getProducts"></pagination>
+    </div>
+  
+
+  <!-- Modal -->
+  <!-- productModal 已拉到js 做為全域元件-->
+  <!-- 將元件渲染至畫面 外傳內(用v-bind) 記得標籤跟屬性名稱碰到大寫 要轉寫 -接小寫 前內(元件template內的tempProduct)後外(props的tempProduct)-->
+  <!-- 需要內傳外(用v-on) 控制函式 前內(元件template內的update-product)後外(函式updateProduct) -->
+  <product-modal :temp-product="tempProduct" @update-product="updateProduct"></product-modal>
+
+  <!-- productDeleteModal 已拉到js 做為全域元件-->
+  <!-- 將元件渲染至畫面 外傳內(用v-bind) 記得標籤跟屬性名稱碰到大寫 要轉寫 -接小寫 前內(元件template內的productTitle)後外(props的productTitle) -->
+  <!-- 需要內傳外(用v-on) 控制函式 前內(元件template內的delete-product)後外(函式deleteProduct) -->
+  <product-delete-modal :product-title="productTitle" @delete-product="deleteProduct"></product-delete-modal>
+  <!-- Modal -->
+  </main>
+  </div>
+  <!-- axios -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+  <!-- popper 提示文框 -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"
+    integrity="sha384-SR1sx49pcuLnqZUnnPwx6FCym0wLsk5JZuNx2bPPENzswTNFaQU1RDvt3wT4gWFG" crossorigin="anonymous"></script>
+  <!-- bs5 js  -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+    crossorigin="anonymous"></script>
+  <!-- 自己的js -->
+  <script src="./js/products.js" type="module"></script>
+</body>
+
+</html>
